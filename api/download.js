@@ -1,30 +1,31 @@
-// api/download.js
 export default async function handler(req, res) {
     const { id } = req.query;
-    if (!id) return res.status(400).send("No ID");
+    if (!id) return res.status(400).send("ID Required");
 
     try {
-        // Método agresivo: Usamos un Proxy que imita a Roblox Studio
-        const downloadUrl = `https://assetdelivery.roproxy.com/v1/asset/?id=${id}`;
+        // Usamos una URL de descarga que no requiere login si se envía el User-Agent correcto
+        const targetUrl = `https://assetdelivery.roproxy.com/v1/asset/?id=${id}`;
         
-        const response = await fetch(downloadUrl, {
+        const response = await fetch(targetUrl, {
+            method: 'GET',
             headers: {
-                'User-Agent': 'Roblox/WinInet',
+                'User-Agent': 'Roblox/WinInet', // Esto simula que eres Roblox Studio
                 'Accept': '*/*'
             }
         });
 
-        if (!response.ok) throw new Error("Blocked");
+        if (!response.ok) throw new Error("Security Block");
 
         const buffer = await response.arrayBuffer();
 
-        // Configuramos para que el navegador descargue el archivo automáticamente
+        // Forzamos la descarga directa del modelo/juego
         res.setHeader('Content-Type', 'application/octet-stream');
-        res.setHeader('Content-Disposition', `attachment; filename="Flexin_Game_${id}.rbxm"`);
+        res.setHeader('Content-Disposition', `attachment; filename="Game_Model_${id}.rbxm"`);
+        
         return res.send(Buffer.from(buffer));
 
     } catch (error) {
-        // Si el proxy principal falla, usamos la API de assets oficial como respaldo
-        return res.redirect(`https://www.roblox.com/asset-thumbnail/image?assetId=${id}&width=420&height=420&format=png`);
+        // Método de emergencia si el primero falla
+        return res.redirect(`https://assetdelivery.roblox.com/v1/asset/?id=${id}`);
     }
 }
