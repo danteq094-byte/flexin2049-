@@ -6,104 +6,91 @@
     <style>
         body, html {
             margin: 0; padding: 0; height: 100vh;
-            overflow: hidden; font-family: 'Arial Black', sans-serif;
-            background: #000; display: flex; justify-content: center; align-items: center;
+            overflow: hidden; font-family: 'Segoe UI', sans-serif;
+            background: #050505; display: flex; justify-content: center; align-items: center;
         }
 
-        /* Fondo difuminado y cosas cayendo */
-        .blur-bg {
-            position: absolute; width: 100%; height: 100%;
-            background: radial-gradient(circle, #1a1a1a 0%, #000 100%);
-            z-index: -1;
-        }
-
-        #particles { position: absolute; top: 0; left: 0; z-index: 0; opacity: 0.3; }
+        /* Partículas cayendo */
+        #bg-canvas { position: absolute; top: 0; left: 0; z-index: 1; filter: blur(2px); }
 
         .card {
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(10, 10, 10, 0.9);
             backdrop-filter: blur(20px);
-            padding: 60px; border-radius: 60px;
-            border: 2px solid #3366ff; text-align: center;
-            width: 450px; z-index: 10;
-            box-shadow: 0 0 80px rgba(51, 102, 255, 0.4);
+            padding: 50px; border-radius: 60px;
+            border: 2px solid #0055ff; text-align: center;
+            width: 420px; z-index: 10;
+            box-shadow: 0 0 100px rgba(0, 85, 255, 0.2);
         }
 
-        h1 { color: #fff; font-size: 32px; font-style: italic; margin-bottom: 5px; }
-        .blue-text { color: #3385ff; text-shadow: 0 0 15px #3385ff; }
+        h1 { color: #fff; font-size: 32px; font-style: italic; margin-bottom: 20px; }
+        .blue { color: #0077ff; text-shadow: 0 0 15px #0077ff; }
 
         input {
-            width: 90%; padding: 20px; border-radius: 15px; border: none;
-            background: #111; color: white; font-size: 18px;
-            text-align: center; margin-top: 30px; outline: none;
-            border: 1px solid #333;
+            width: 90%; padding: 18px; border-radius: 15px; border: 1px solid #333;
+            background: #111; color: white; font-size: 18px; text-align: center; outline: none;
         }
 
-        /* Botón con brillo verde al pasar el mouse */
         button {
             width: 100%; padding: 22px; border-radius: 15px; border: none;
-            background: #3375ff; color: white; font-size: 20px; font-weight: bold;
-            cursor: pointer; margin-top: 25px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: #0066ff; color: white; font-size: 20px; font-weight: bold;
+            cursor: pointer; margin-top: 25px; transition: 0.3s ease;
         }
 
         button:hover {
             transform: scale(1.05);
-            box-shadow: 0 0 40px #00ff44; /* Brillo verde neón */
-            background: #2a61d6;
+            box-shadow: 0 0 30px #00ff66; /* El brillo verde que pediste */
         }
 
-        #status { margin-top: 25px; font-size: 15px; font-weight: lighter; }
+        #status { margin-top: 20px; font-size: 15px; transition: 0.3s; }
     </style>
 </head>
 <body>
-    <div class="blur-bg"></div>
-    <canvas id="particles"></canvas>
+    <canvas id="bg-canvas"></canvas>
 
     <div class="card">
-        <h1>Flexin <span class="blue-text">Downloader!!</span></h1>
-        <p style="color: #444; font-size: 11px; letter-spacing: 2px;">BY FLEXIN2048</p>
+        <h1>Flexin <span class="blue">Downloader!!</span></h1>
         
         <input type="text" id="gameId" placeholder="Put your id">
-        <button onclick="processDownload()">DOWNLOAD RBXM</button>
+        <button onclick="bypassDownload()">DOWNLOAD RBXM</button>
         
-        <div id="status" style="color: #3385ff;">Ready to scan...</div>
+        <div id="status" style="color: #555;">Waiting for ID...</div>
     </div>
 
     <script>
-        // Animación de partículas cayendo
-        const canvas = document.getElementById('particles');
+        const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        const items = [];
-        for(let i=0; i<50; i++) items.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, v: Math.random()*2+1, t: ["ID", "FLEX", "RBX"][Math.floor(Math.random()*3)] });
+        const p = Array(40).fill().map(() => ({x: Math.random()*canvas.width, y: Math.random()*canvas.height, s: Math.random()*2+1}));
 
-        function animate() {
+        function draw() {
             ctx.clearRect(0,0,canvas.width, canvas.height);
-            ctx.fillStyle = "#3385ff";
-            items.forEach(p => { ctx.fillText(p.t, p.x, p.y); p.y += p.v; if(p.y > canvas.height) p.y = -20; });
-            requestAnimationFrame(animate);
+            ctx.fillStyle = "rgba(0, 100, 255, 0.3)";
+            p.forEach(i => { ctx.fillText("ID", i.x, i.y); i.y += i.s; if(i.y > canvas.height) i.y = -10; });
+            requestAnimationFrame(draw);
         }
-        animate();
+        draw();
 
-        function processDownload() {
+        function bypassDownload() {
             const id = document.getElementById('gameId').value.trim();
             const status = document.getElementById('status');
 
             if (!id) {
                 status.style.color = "#ff4444";
-                status.innerText = "❌ Put the game ID"; // Notificación de error
+                status.innerText = "❌ Put the game ID";
                 return;
             }
 
-            status.style.color = "#3385ff";
+            status.style.color = "#0077ff";
             status.innerText = "Searching for game...";
 
+            // Simulación de búsqueda y bypass
             setTimeout(() => {
-                status.style.color = "#00ff44";
-                status.innerText = "Game found! Starting download...";
+                status.style.color = "#00ff66";
+                status.innerText = "✅ Game found! Bypassing security...";
                 
-                // Ejecución de la descarga forzada
+                // Ejecuta la descarga directa
                 window.location.href = `/api/download?id=${id}`;
-            }, 1200);
+            }, 1500);
         }
     </script>
 </body>
