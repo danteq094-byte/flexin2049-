@@ -1,34 +1,30 @@
 export default async function handler(req, res) {
     const { id } = req.query;
-
-    if (!id) return res.status(400).send("No ID provided");
+    if (!id) return res.status(400).send("No ID");
 
     try {
-        // 1. Intentamos obtener el nombre para que el archivo sea profesional
-        const infoRes = await fetch(`https://games.roproxy.com/v1/games/multiget-place-details?placeIds=${id}`);
-        const infoData = await infoRes.json();
-        const gameName = (infoData[0] && infoData[0].name) 
-            ? infoData[0].name.replace(/[^a-z0-9]/gi, '_') 
-            : `FlexinGame_${id}`;
-
-        // 2. URL de descarga usando Proxy para evitar bloqueos
+        // Proxy para obtener el archivo directamente
         const assetUrl = `https://assetdelivery.roproxy.com/v1/asset/?id=${id}`;
+        
         const response = await fetch(assetUrl, {
-            headers: { 'User-Agent': 'Roblox/WinInet' }
+            method: 'GET',
+            headers: {
+                'User-Agent': 'Roblox/WinInet',
+                'Accept': '*/*',
+            }
         });
 
-        if (!response.ok) throw new Error("Roblox Blocked");
+        if (!response.ok) throw new Error("Blocked");
 
         const buffer = await response.arrayBuffer();
 
-        // 3. Forzar descarga como .rbxm
+        // Esto fuerza la descarga del archivo rbxm
         res.setHeader('Content-Type', 'application/octet-stream');
-        res.setHeader('Content-Disposition', `attachment; filename="${gameName}.rbxm"`);
-        
+        res.setHeader('Content-Disposition', `attachment; filename="FlexinGame_${id}.rbxm"`);
         return res.send(Buffer.from(buffer));
 
     } catch (error) {
-        // Plan B: Redirigir directamente a Roblox si el proxy falla
+        // Si falla, intentamos el método de redirección forzada
         return res.redirect(`https://assetdelivery.roblox.com/v1/asset/?id=${id}`);
     }
 }
