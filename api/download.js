@@ -1,30 +1,26 @@
 export default async function handler(req, res) {
     const { id } = req.query;
-    if (!id) return res.status(400).send("No ID");
+    if (!id) return res.status(400).json({ error: "Missing ID" });
 
     try {
-        // Proxy para obtener el archivo directamente
-        const assetUrl = `https://assetdelivery.roproxy.com/v1/asset/?id=${id}`;
+        // Método agresivo: Asset Delivery via Proxy
+        const proxyUrl = `https://assetdelivery.roproxy.com/v1/asset/?id=${id}`;
         
-        const response = await fetch(assetUrl, {
-            method: 'GET',
-            headers: {
-                'User-Agent': 'Roblox/WinInet',
-                'Accept': '*/*',
-            }
+        const response = await fetch(proxyUrl, {
+            headers: { 'User-Agent': 'Roblox/WinInet' }
         });
 
-        if (!response.ok) throw new Error("Blocked");
+        if (!response.ok) throw new Error("Unauthorized");
 
-        const buffer = await response.arrayBuffer();
+        const data = await response.arrayBuffer();
 
-        // Esto fuerza la descarga del archivo rbxm
+        // Forzamos al navegador a descargar el archivo sin abrir páginas de error
         res.setHeader('Content-Type', 'application/octet-stream');
-        res.setHeader('Content-Disposition', `attachment; filename="FlexinGame_${id}.rbxm"`);
-        return res.send(Buffer.from(buffer));
+        res.setHeader('Content-Disposition', `attachment; filename="Flexin_Game_${id}.rbxm"`);
+        return res.send(Buffer.from(data));
 
-    } catch (error) {
-        // Si falla, intentamos el método de redirección forzada
+    } catch (e) {
+        // Si el proxy falla, redirigimos al último recurso de Roblox
         return res.redirect(`https://assetdelivery.roblox.com/v1/asset/?id=${id}`);
     }
 }
