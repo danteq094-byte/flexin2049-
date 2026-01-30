@@ -2,83 +2,103 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Flexin2048 - Game Downloader</title>
+    <title>Flexin2048 - Ultra Downloader</title>
     <style>
         body, html {
-            margin: 0; padding: 0; height: 100vh;
-            display: flex; justify-content: center; align-items: center;
-            background: #400000; font-family: 'Arial Black', sans-serif;
-            overflow: hidden;
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; font-family: 'Arial Black', sans-serif;
+            background: #000; display: flex; justify-content: center; align-items: center;
         }
 
-        /* Fondo de ondas fluido */
-        .bg {
+        /* Fondo difuminado fluido */
+        .blur-bg {
             position: absolute; width: 100%; height: 100%;
-            background: linear-gradient(45deg, #8b0000, #ff0000, #200000);
-            background-size: 400% 400%;
-            animation: moveBg 10s ease infinite;
-            z-index: -1;
+            background: linear-gradient(45deg, #400000, #1a0000, #000);
+            filter: blur(50px); z-index: -1;
         }
 
-        @keyframes moveBg {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
+        /* Cosas cayendo (Canvas para fluidez) */
+        #particles { position: absolute; top: 0; left: 0; z-index: 0; }
 
-        /* Tarjeta con bordes súper redondos */
         .card {
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(15px);
-            border: 3px solid #ff3333;
-            border-radius: 60px; /* Bordes muy redondos */
-            padding: 60px; text-align: center;
-            width: 420px; box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(20px);
+            padding: 60px; border-radius: 70px; /* Súper redondo */
+            border: 2px solid #ff0000; text-align: center;
+            width: 450px; z-index: 10;
+            box-shadow: 0 0 100px rgba(255, 0, 0, 0.2);
         }
 
-        h1 { color: #ff3333; font-style: italic; margin-bottom: 5px; font-size: 30px; }
-        h2 { color: #ff9999; font-size: 12px; letter-spacing: 2px; margin-bottom: 40px; }
-
+        h1 { color: #ff3333; font-style: italic; margin-bottom: 10px; font-size: 35px; text-shadow: 0 0 20px #ff0000; }
         input {
-            width: 100%; padding: 18px; border-radius: 20px;
-            border: 2px solid #ff0000; background: #1a0000;
-            color: white; font-size: 18px; text-align: center; outline: none;
+            width: 90%; padding: 20px; border-radius: 20px; border: 2px solid #ff3333;
+            background: rgba(255,0,0,0.1); color: white; font-size: 20px; text-align: center; outline: none;
         }
 
-        /* Botón que se agranda y brilla en verde */
+        /* Botón que se agranda y brilla verde */
         .btn {
-            width: 100%; padding: 22px; border-radius: 40px;
-            border: none; background: #ff0000; color: white;
-            font-size: 20px; font-weight: bold; cursor: pointer;
-            margin-top: 25px; transition: all 0.3s ease;
+            width: 100%; padding: 25px; border-radius: 50px; border: none;
+            background: #ff0000; color: white; font-size: 22px; font-weight: bold;
+            cursor: pointer; margin-top: 30px; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .btn:hover {
-            transform: scale(1.1); /* Se agranda */
+            transform: scale(1.1);
+            box-shadow: 0 0 50px #00ff44; /* Luz verde neón */
             background: #cc0000;
-            box-shadow: 0 0 40px #00ff44; /* Brillo neón verde */
         }
 
-        #msg { color: #ffcccc; margin-top: 20px; font-size: 14px; }
+        #status { margin-top: 20px; color: #ff8080; font-size: 14px; }
     </style>
 </head>
 <body>
-    <div class="bg"></div>
+    <div class="blur-bg"></div>
+    <canvas id="particles"></canvas>
+
     <div class="card">
-        <h1>Flexin2048 - Downloader</h1>
-        <h2>BY FLEXIN2048</h2>
-        <input type="text" id="gameId" placeholder="Insert Game ID">
+        <h1>Flexin Downloader</h1>
+        <p style="color: #ff9999; letter-spacing: 5px; font-size: 12px; margin-bottom: 30px;">BY FLEXIN2048</p>
+        
+        <input type="text" id="gameId" placeholder="INSERT GAME ID">
         <button class="btn" onclick="dl()">DOWNLOAD RBXM</button>
-        <div id="msg">Ready to flex...</div>
+        
+        <div id="status">Waiting for input...</div>
     </div>
 
     <script>
+        // Animación de cosas cayendo
+        const canvas = document.getElementById('particles');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const particles = [];
+        for(let i=0; i<50; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                v: Math.random() * 2 + 1,
+                text: ["ID", "RBX", "FLEX", "01"][Math.floor(Math.random()*4)]
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "rgba(255, 0, 0, 0.2)";
+            ctx.font = "15px Arial";
+            particles.forEach(p => {
+                ctx.fillText(p.text, p.x, p.y);
+                p.y += p.v;
+                if(p.y > canvas.height) p.y = -20;
+            });
+            requestAnimationFrame(draw);
+        }
+        draw();
+
         function dl() {
             const id = document.getElementById('gameId').value.trim();
-            if(!id) return alert("Enter ID!");
-            document.getElementById('msg').innerText = "Downloading...";
-            
-            // LLAMADA A LA API (sin carpetas raras en medio)
+            if(!id) return;
+            document.getElementById('status').innerText = "FORCING DOWNLOAD...";
             window.location.href = `/api/download?id=${id}`;
         }
     </script>
