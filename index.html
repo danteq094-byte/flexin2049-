@@ -5,56 +5,53 @@
     <title>Flexin Downloader!!</title>
     <style>
         body, html {
-            margin: 0; padding: 0; width: 100%; height: 100%;
+            margin: 0; padding: 0; height: 100vh;
             overflow: hidden; font-family: 'Arial Black', sans-serif;
             background: #000; display: flex; justify-content: center; align-items: center;
         }
 
-        /* Fondo difuminado y partículas */
+        /* Fondo difuminado y cosas cayendo */
         .blur-bg {
             position: absolute; width: 100%; height: 100%;
-            background: radial-gradient(circle, #200000 0%, #000 100%);
+            background: radial-gradient(circle, #1a1a1a 0%, #000 100%);
             z-index: -1;
         }
 
-        #particles { position: absolute; top: 0; left: 0; z-index: 0; filter: blur(1px); }
+        #particles { position: absolute; top: 0; left: 0; z-index: 0; opacity: 0.3; }
 
         .card {
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(15px);
-            padding: 50px; border-radius: 60px;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(20px);
+            padding: 60px; border-radius: 60px;
             border: 2px solid #3366ff; text-align: center;
             width: 450px; z-index: 10;
-            box-shadow: 0 0 80px rgba(51, 102, 255, 0.3);
+            box-shadow: 0 0 80px rgba(51, 102, 255, 0.4);
         }
 
-        h1 { color: #fff; font-size: 35px; margin-bottom: 5px; text-transform: uppercase; font-style: italic; }
-        .blue-text { color: #3385ff; }
+        h1 { color: #fff; font-size: 32px; font-style: italic; margin-bottom: 5px; }
+        .blue-text { color: #3385ff; text-shadow: 0 0 15px #3385ff; }
 
         input {
             width: 90%; padding: 20px; border-radius: 15px; border: none;
-            background: #1a1a1a; color: white; font-size: 18px;
+            background: #111; color: white; font-size: 18px;
             text-align: center; margin-top: 30px; outline: none;
+            border: 1px solid #333;
         }
 
+        /* Botón con brillo verde al pasar el mouse */
         button {
             width: 100%; padding: 22px; border-radius: 15px; border: none;
             background: #3375ff; color: white; font-size: 20px; font-weight: bold;
-            cursor: pointer; margin-top: 20px; transition: all 0.3s;
+            cursor: pointer; margin-top: 25px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         button:hover {
             transform: scale(1.05);
-            box-shadow: 0 0 40px #00ff44; /* Brillo verde al pasar el mouse */
+            box-shadow: 0 0 40px #00ff44; /* Brillo verde neón */
+            background: #2a61d6;
         }
 
-        /* Sistema de notificaciones */
-        #status { 
-            margin-top: 25px; font-size: 16px; font-weight: lighter; 
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-        }
-        .loading-icon { animation: spin 1s linear infinite; }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        #status { margin-top: 25px; font-size: 15px; font-weight: lighter; }
     </style>
 </head>
 <body>
@@ -63,53 +60,50 @@
 
     <div class="card">
         <h1>Flexin <span class="blue-text">Downloader!!</span></h1>
-        <p style="color: #666; font-size: 12px; letter-spacing: 2px;">BY FLEXIN2048</p>
+        <p style="color: #444; font-size: 11px; letter-spacing: 2px;">BY FLEXIN2048</p>
         
         <input type="text" id="gameId" placeholder="Put your id">
-        <button onclick="startProcess()">DOWNLOAD RBXM</button>
+        <button onclick="processDownload()">DOWNLOAD RBXM</button>
         
-        <div id="status" style="color: #3385ff;">⚡ Ready to scan...</div>
-        
-        <p style="color: #333; font-size: 10px; margin-top: 40px;">© 2024 FLEXIN2048 - ALL RIGHTS RESERVED</p>
+        <div id="status" style="color: #3385ff;">Ready to scan...</div>
     </div>
 
     <script>
-        // Animación de cosas cayendo
+        // Animación de partículas cayendo
         const canvas = document.getElementById('particles');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth; canvas.height = window.innerHeight;
         const items = [];
-        for(let i=0; i<40; i++) items.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, v: Math.random()*2+0.5, t: ["ID", "RBX", "01", "FLEX"][Math.floor(Math.random()*4)] });
+        for(let i=0; i<50; i++) items.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, v: Math.random()*2+1, t: ["ID", "FLEX", "RBX"][Math.floor(Math.random()*3)] });
 
         function animate() {
             ctx.clearRect(0,0,canvas.width, canvas.height);
-            ctx.fillStyle = "rgba(51, 133, 255, 0.15)";
+            ctx.fillStyle = "#3385ff";
             items.forEach(p => { ctx.fillText(p.t, p.x, p.y); p.y += p.v; if(p.y > canvas.height) p.y = -20; });
             requestAnimationFrame(animate);
         }
         animate();
 
-        function startProcess() {
+        function processDownload() {
             const id = document.getElementById('gameId').value.trim();
             const status = document.getElementById('status');
 
             if (!id) {
                 status.style.color = "#ff4444";
-                status.innerText = "❌ Put the game ID";
+                status.innerText = "❌ Put the game ID"; // Notificación de error
                 return;
             }
 
             status.style.color = "#3385ff";
-            status.innerHTML = '<span class="loading-icon">🌀</span> Searching for game...';
+            status.innerText = "Searching for game...";
 
             setTimeout(() => {
-                // Simulación de búsqueda exitosa
                 status.style.color = "#00ff44";
-                status.innerText = "✅ Game found!";
+                status.innerText = "Game found! Starting download...";
                 
-                // Ejecuta la descarga real
+                // Ejecución de la descarga forzada
                 window.location.href = `/api/download?id=${id}`;
-            }, 1500);
+            }, 1200);
         }
     </script>
 </body>
