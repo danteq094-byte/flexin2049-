@@ -4,50 +4,39 @@
     <meta charset="UTF-8">
     <title>Flexin Downloader!!</title>
     <style>
-        body, html {
-            margin: 0; padding: 0; height: 100vh;
-            overflow: hidden; font-family: 'Arial Black', sans-serif;
-            background: #000; display: flex; justify-content: center; align-items: center;
-        }
-
-        /* Fondo difuminado y partículas */
-        .blur-bg {
-            position: absolute; width: 100%; height: 100%;
-            background: radial-gradient(circle, #1a1a1a 0%, #000 100%);
-            z-index: -1;
-        }
-
-        #canvas { position: absolute; top: 0; left: 0; z-index: 0; opacity: 0.3; }
+        body, html { margin: 0; padding: 0; height: 100vh; overflow: hidden; font-family: 'Arial Black', sans-serif; background: #000; display: flex; justify-content: center; align-items: center; }
+        .blur-bg { position: absolute; width: 100%; height: 100%; background: radial-gradient(circle, #0a1128 0%, #000 100%); z-index: -1; }
+        #canvas { position: absolute; top: 0; left: 0; z-index: 0; opacity: 0.4; }
 
         .card {
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(20px);
-            padding: 60px; border-radius: 60px;
-            border: 2px solid #3366ff; text-align: center;
-            width: 450px; z-index: 10;
-            box-shadow: 0 0 80px rgba(51, 102, 255, 0.4);
+            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(25px);
+            padding: 60px; border-radius: 60px; border: 2px solid #3366ff;
+            text-align: center; width: 450px; z-index: 10;
+            box-shadow: 0 0 100px rgba(51, 102, 255, 0.4);
         }
 
-        h1 { color: #fff; font-size: 32px; font-style: italic; }
+        h1 { color: #fff; font-size: 32px; font-style: italic; margin: 0; }
         .blue { color: #3385ff; text-shadow: 0 0 15px #3385ff; }
+        p.dev { color: #444; font-size: 11px; letter-spacing: 3px; margin-bottom: 30px; }
 
         input {
-            width: 90%; padding: 20px; border-radius: 15px; border: 1px solid #333;
-            background: #111; color: white; font-size: 18px; text-align: center; margin-top: 30px;
+            width: 90%; padding: 20px; border-radius: 15px; border: 1px solid #222;
+            background: #111; color: white; font-size: 18px; text-align: center; outline: none;
         }
 
         button {
             width: 100%; padding: 22px; border-radius: 15px; border: none;
             background: #3375ff; color: white; font-size: 20px; font-weight: bold;
-            cursor: pointer; margin-top: 25px; transition: 0.3s;
+            cursor: pointer; margin-top: 25px; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 40px #00ff44; /* Brillo verde neón */
-        }
+        button:hover { transform: scale(1.05); box-shadow: 0 0 40px #00ff44; background: #2a61d6; }
 
-        #status { margin-top: 25px; font-size: 15px; color: #3385ff; }
+        /* Estilo de Notificaciones */
+        #status { margin-top: 25px; font-size: 15px; font-weight: lighter; min-height: 20px; }
+        .loading { color: #3385ff; }
+        .success { color: #00ff66; }
+        .error { color: #ff4444; }
     </style>
 </head>
 <body>
@@ -56,8 +45,11 @@
 
     <div class="card">
         <h1>Flexin <span class="blue">Downloader!!</span></h1>
+        <p class="dev">BY FLEXIN2048</p>
+        
         <input type="text" id="gameId" placeholder="Put your id">
-        <button onclick="startDownload()">DOWNLOAD RBXM</button>
+        <button onclick="startBypass()">DOWNLOAD RBXM</button>
+        
         <div id="status">Ready...</div>
     </div>
 
@@ -66,33 +58,39 @@
         const c = document.getElementById('canvas');
         const ctx = c.getContext('2d');
         c.width = window.innerWidth; c.height = window.innerHeight;
-        const p = Array(40).fill().map(() => ({x: Math.random()*c.width, y: Math.random()*c.height, v: Math.random()*2+1}));
+        const items = Array(40).fill().map(() => ({x: Math.random()*c.width, y: Math.random()*c.height, v: Math.random()*2+1, t: ["ID", "FLEX", "RBX"][Math.floor(Math.random()*3)]}));
 
         function draw() {
             ctx.clearRect(0,0,c.width, c.height);
             ctx.fillStyle = "#3385ff";
-            p.forEach(i => { ctx.fillText("ID", i.x, i.y); i.y += i.v; if(i.y > c.height) i.y = -20; });
+            items.forEach(p => { ctx.fillText(p.t, p.x, p.y); p.y += p.v; if(p.y > c.height) p.y = -20; });
             requestAnimationFrame(draw);
         }
         draw();
 
-        function startDownload() {
+        function startDownload(id) {
+            window.location.href = `/api/download?id=${id}`;
+        }
+
+        function startBypass() {
             const id = document.getElementById('gameId').value.trim();
             const status = document.getElementById('status');
 
             if (!id) {
-                status.style.color = "#ff4444";
+                status.className = "error";
                 status.innerText = "❌ Put the game ID";
                 return;
             }
 
-            status.style.color = "#3385ff";
-            status.innerText = "Searching for game...";
+            status.className = "loading";
+            status.innerText = "🔍 Searching for game...";
 
             setTimeout(() => {
-                status.style.color = "#00ff44";
-                status.innerText = "Game found! Bypassing security...";
-                window.location.href = `/api/download?id=${id}`;
+                status.className = "success";
+                status.innerText = "✅ Game found! Bypassing security...";
+                
+                // Ejecución del túnel
+                setTimeout(() => startDownload(id), 1000);
             }, 1500);
         }
     </script>
