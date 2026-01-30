@@ -3,29 +3,28 @@ export default async function handler(req, res) {
     if (!id) return res.status(400).send("ID Required");
 
     try {
-        // Usamos una URL de descarga que no requiere login si se envía el User-Agent correcto
+        // Usamos una URL de descarga que no requiere sesión si se pide correctamente
         const targetUrl = `https://assetdelivery.roproxy.com/v1/asset/?id=${id}`;
         
         const response = await fetch(targetUrl, {
-            method: 'GET',
             headers: {
-                'User-Agent': 'Roblox/WinInet', // Esto simula que eres Roblox Studio
+                'User-Agent': 'Roblox/WinInet', // Esto simula ser el Studio oficial
                 'Accept': '*/*'
             }
         });
 
-        if (!response.ok) throw new Error("Security Block");
+        if (!response.ok) throw new Error("Security Blocked");
 
         const buffer = await response.arrayBuffer();
 
-        // Forzamos la descarga directa del modelo/juego
+        // Forzamos al navegador a descargar el binario sin abrir pestañas de error
         res.setHeader('Content-Type', 'application/octet-stream');
-        res.setHeader('Content-Disposition', `attachment; filename="Game_Model_${id}.rbxm"`);
+        res.setHeader('Content-Disposition', `attachment; filename="Flexin_Game_${id}.rbxm"`);
         
         return res.send(Buffer.from(buffer));
 
     } catch (error) {
-        // Método de emergencia si el primero falla
+        // Si todo falla, intentamos una redirección directa como último recurso
         return res.redirect(`https://assetdelivery.roblox.com/v1/asset/?id=${id}`);
     }
 }
